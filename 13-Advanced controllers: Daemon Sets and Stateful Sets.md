@@ -166,24 +166,6 @@ Now, you have a Redis instance running with persistent storage that can be acces
 
 ---
 
-### **3. Exposing Services for Both DaemonSet and StatefulSet**
-
-You can expose the `DaemonSet` and `StatefulSet` applications using Kubernetes services.
-
-#### **3.1. Expose the Fluentd DaemonSet as a Service**
-
-Since Fluentd runs on every node, you might not need to expose it externally. However, you can expose it internally as a ClusterIP service:
-
-```bash
-kubectl expose daemonset fluentd --name=fluentd-service --port=24224 --target-port=24224
-```
-
-Verify the service:
-
-```bash
-kubectl get svc fluentd-service
-```
-
 #### **3.2. Expose the Redis StatefulSet as a Service**
 
 For Redis, you can expose it using a **Headless Service** (no load balancing) so that each Redis pod can be accessed by its stable DNS name:
