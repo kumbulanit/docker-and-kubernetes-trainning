@@ -9,71 +9,117 @@ We will walk through how to deploy both of these controllers and how they are us
 
 ---
 
-### **1. DaemonSet Example: Deploying Fluentd as a Log Forwarder**
+### **1. DaemonSet Example: Deploying filebeat**
 
 A `DaemonSet` ensures that a pod is running on each node. We will use Fluentd, a popular log forwarder, to collect logs from every node in the cluster and forward them to a logging system.
 
-#### **Step 1: Create a DaemonSet for Fluentd**
+#### **Step 1: Create a DaemonSet for Filebeat, it also includes namespace,configmap in one file **
 
 1. **Create a DaemonSet YAML file (`fluentd-daemonset.yaml`):**
 
 ```yaml
-apiVersion: apps/v1
-kind: DaemonSet
+apiVersion: v1
+kind: Namespace
 metadata:
-  name: fluentd
-spec:
-  selector:
-    matchLabels:
-      app: fluentd
-  template:
-    metadata:
-      labels:
-        app: fluentd
-    spec:
-      containers:
-        - name: fluentd
-          image: fluent/fluentd:v1.12-1
-          ports:
-            - containerPort: 24224
-          volumeMounts:
-            - name: fluentd-config
-              mountPath: /fluentd/etc
-      volumes:
-        - name: fluentd-config
-          configMap:
-            name: fluentd-config
-```
-
-2. **Create the ConfigMap for Fluentd configuration:**
-
-Before applying the DaemonSet, we need a ConfigMap for Fluentd configuration. Create a file named `fluentd-configmap.yaml`:
-
-```yaml
+  name: logging
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: fluentd-config
+  name: filebeat-config
+  namespace: logging
+  labels:
+    app: filebeat
 data:
-  fluentd.conf: |
-    <source>
-      @type tail
-      tag kubernetes.*
-      path /var/log/containers/*.log
-      pos_file /var/log/fluentd-containers.log.pos
-      format json
-    </source>
+  filebeat.yml: |-
+    filebeat.inputs:
+    - type: container
+      paths:
+        - /var/log/containers/*.log
+      processors:
+        - add_kubernetes_metadata:
+            in_cluster: true
 
-    <match kubernetes.**>
-      @type stdout
-    </match>
+    output.elasticsearch:
+      hosts: ["http://elasticsearch:9200"]
+      username: "elastic"
+      password: "changeme"
+
+    setup.template.enabled: false
+    setup.ilm.enabled: false
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: filebeat
+  namespace: logging
+  labels:
+    app: filebeat
+spec:
+  selector:
+    matchLabels:
+      app: filebeat
+  template:
+    metadata:
+      labels:
+        app: filebeat
+    spec:
+      serviceAccountName: filebeat
+      containers:
+      - name: filebeat
+        image: docker.elastic.co/beats/filebeat:8.10.0
+        args: [
+          "-c", "/etc/filebeat.yml",
+          "-e",
+        ]
+        env:
+          - name: ELASTICSEARCH_HOST
+            value: "elasticsearch"
+          - name: ELASTICSEARCH_PORT
+            value: "9200"
+        securityContext:
+          runAsUser: 0
+        resources:
+          limits:
+            memory: 200Mi
+            cpu: 100m
+          requests:
+            memory: 100Mi
+            cpu: 100m
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/filebeat.yml
+          subPath: filebeat.yml
+        - name: varlog
+          mountPath: /var/log
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+      volumes:
+      - name: config-volume
+        configMap:
+          name: filebeat-config
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: varlibdockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: filebeat
+  namespace: logging
+  labels:
+    app: filebeat
+
 ```
 
 3. **Apply the ConfigMap and DaemonSet:**
 
 ```bash
-kubectl apply -f fluentd-configmap.yaml
-kubectl apply -f fluentd-daemonset.yaml
+kubectl apply -f filebeat-daemonset.yaml
 ```
 
 4. **Verify the DaemonSet:**
@@ -82,7 +128,7 @@ After applying the DaemonSet, check the status of the pods:
 
 ```bash
 kubectl get daemonsets
-kubectl get pods -l app=fluentd
+kubectl get pods -l app=filebeat
 ```
 
 Fluentd will now run on each node in the cluster and collect logs from all the containers.
@@ -98,7 +144,6 @@ A `StatefulSet` is used to manage stateful applications, ensuring that each pod 
 1. **Create a StatefulSet YAML file (`redis-statefulset.yaml`):**
 
 ```yaml
-apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: redis
