@@ -22,6 +22,11 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: logging
+```
+
+create config map 
+
+```yaml
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -47,6 +52,9 @@ data:
 
     setup.template.enabled: false
     setup.ilm.enabled: false
+```
+create a deamonset deamonset-filebeat.yaml
+```yaml
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -105,6 +113,10 @@ spec:
       - name: varlibdockercontainers
         hostPath:
           path: /var/lib/docker/containers
+```
+create a service account service-account.yaml
+
+```yaml
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -144,6 +156,7 @@ A `StatefulSet` is used to manage stateful applications, ensuring that each pod 
 1. **Create a StatefulSet YAML file (`redis-statefulset.yaml`):**
 
 ```yaml
+apiVersion: v1
 kind: StatefulSet
 metadata:
   name: redis
