@@ -156,7 +156,7 @@ A `StatefulSet` is used to manage stateful applications, ensuring that each pod 
 1. **Create a StatefulSet YAML file (`redis-statefulset.yaml`):**
 
 ```yaml
-apiVersion: v1
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: redis
