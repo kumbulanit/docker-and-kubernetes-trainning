@@ -83,10 +83,20 @@ kind: NetworkPolicy
 metadata:
   name: deny-all-traffic
 spec:
-  podSelector: {}
+  podSelector:
+    matchLabels:
+      app: pod-b # Target Pod B by its label
   policyTypes:
   - Ingress
-  ingress: []
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: pod-a # Block traffic from Pods labeled as Pod A
+    ports:
+    - protocol: TCP
+      port: 80
+
 ```
 
 This network policy will block all inbound traffic to any pod in the cluster. You can modify the policy to selectively allow traffic from specific sources by adding `from` clauses under the `ingress` field.
