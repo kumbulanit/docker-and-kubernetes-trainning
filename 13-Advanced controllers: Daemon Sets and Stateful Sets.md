@@ -11,11 +11,11 @@ We will walk through how to deploy both of these controllers and how they are us
 
 ### **1. DaemonSet Example: Deploying filebeat**
 
-A `DaemonSet` ensures that a pod is running on each node. We will use Fluentd, a popular log forwarder, to collect logs from every node in the cluster and forward them to a logging system.
+A `DaemonSet` ensures that a pod is running on each node. We will use filebeat, a popular log forwarder, to collect logs from every node in the cluster and forward them to a logging system.
 
 #### **Step 1: Create a DaemonSet for Filebeat, it also includes namespace,configmap in one file **
 
-1. **Create a DaemonSet YAML file (`fluentd-daemonset.yaml`):**
+1. **Create a DaemonSet YAML file (`filebeat-daemonset.yaml`):**
 
 ```yaml
 apiVersion: v1
@@ -258,7 +258,7 @@ Now, you can access each Redis pod using the following DNS names: `redis-0.redis
 
 Both `DaemonSet` and `StatefulSet` support scaling, though the use cases differ:
 
-- **Scaling a DaemonSet**: By default, a DaemonSet runs one pod per node. However, you can adjust the number of nodes in your cluster to scale the number of Fluentd pods.
+- **Scaling a DaemonSet**: By default, a DaemonSet runs one pod per node. However, you can adjust the number of nodes in your cluster to scale the number of filebeat pods.
 
 - **Scaling a StatefulSet**: A `StatefulSet` allows you to scale the number of replicas (Redis instances) up or down. To scale Redis:
 
@@ -279,7 +279,7 @@ kubectl get pods -l app=redis
 
 In this exercise, we explored how to deploy advanced controllers like **DaemonSet** and **StatefulSet** in Kubernetes.
 
-- **DaemonSet**: We used Fluentd as an example to deploy a log forwarder on every node in the cluster. This ensures that logs are collected from all nodes, which is a common use case for system monitoring tools.
+- **DaemonSet**: We used filebeat as an example to deploy a log forwarder on every node in the cluster. This ensures that logs are collected from all nodes, which is a common use case for system monitoring tools.
   
 - **StatefulSet**: We deployed Redis as an example of a stateful application that requires persistent storage and stable, unique identities for each pod. StatefulSets are particularly useful for databases and other stateful services.
 
