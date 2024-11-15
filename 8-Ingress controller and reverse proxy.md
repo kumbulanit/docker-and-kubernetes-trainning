@@ -163,6 +163,18 @@ kubectl get svc -n ingress-nginx
 
 Look for the `EXTERNAL-IP` under the `ingress-nginx-controller` service. If it says `<pending>`, wait a minute for the external IP to be assigned.
 
+if it does not show the EXTERNAL IP please do the below 
+
+```bash
+minikube tunnel
+```
+and then open a new tab and rerun 
+
+```bash
+kubectl get svc -n ingress-nginx
+```
+
+
 ---
 
 ### **Step 5: Update Your Local DNS or `/etc/hosts`**
