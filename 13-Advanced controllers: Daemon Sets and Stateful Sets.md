@@ -127,7 +127,7 @@ kubectl apply -f filebeat-daemonset.yaml
 After applying the DaemonSet, check the status of the pods:
 
 ```bash
-kubectl get daemonsets
+kubectl get daemonsets -n logging
 kubectl get pods -l app=filebeat
 ```
 
