@@ -27,7 +27,7 @@ metadata:
 create config map 
 
 ```yaml
----
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -55,7 +55,7 @@ data:
 ```
 create a deamonset deamonset-filebeat.yaml
 ```yaml
----
+
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -117,7 +117,7 @@ spec:
 create a service account service-account.yaml
 
 ```yaml
----
+
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -143,7 +143,7 @@ kubectl get daemonsets -n logging
 kubectl get pods -l app=filebeat
 ```
 
-Fluentd will now run on each node in the cluster and collect logs from all the containers.
+Filebeat will now run on each node in the cluster and collect logs from all the containers.
 
 ---
 
